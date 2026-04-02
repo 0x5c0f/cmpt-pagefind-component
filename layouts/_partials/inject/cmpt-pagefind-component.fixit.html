@@ -1,0 +1,59 @@
+{{- if and .Site.Params.search.enable (eq .Site.Params.search.type "pagefind") -}}
+  {{- $fingerprint := .Site.Store.Get "fingerprint" -}}
+  {{- $search := .Site.Params.search | default dict -}}
+  {{- $pagefind := $search.pagefind | default dict -}}
+  {{- $maxResultLength := 10 -}}
+  {{- if isset $search "maxResultLength" -}}
+    {{- $maxResultLength = index $search "maxResultLength" -}}
+  {{- else if isset $search "maxresultlength" -}}
+    {{- $maxResultLength = index $search "maxresultlength" -}}
+  {{- end -}}
+  {{- $debounceTimeoutMs := 300 -}}
+  {{- if isset $pagefind "debounceTimeoutMs" -}}
+    {{- $debounceTimeoutMs = index $pagefind "debounceTimeoutMs" -}}
+  {{- else if isset $pagefind "debouncetimeoutms" -}}
+    {{- $debounceTimeoutMs = index $pagefind "debouncetimeoutms" -}}
+  {{- end -}}
+  {{- $excerptLength := ($search.snippetLength | default 50) -}}
+  {{- if isset $pagefind "excerptLength" -}}
+    {{- $excerptLength = index $pagefind "excerptLength" -}}
+  {{- else if isset $pagefind "excerptlength" -}}
+    {{- $excerptLength = index $pagefind "excerptlength" -}}
+  {{- end -}}
+  {{- $componentConfig := dict
+    "enabled" true
+    "maxResultLength" $maxResultLength
+    "pagefind" (dict
+      "mode" ($pagefind.mode | default "basic")
+      "bundlePath" ($pagefind.bundlePath | default "/pagefind/")
+      "debounceTimeoutMs" $debounceTimeoutMs
+      "useBuiltInFilters" (cond (eq (printf "%v" $pagefind.useBuiltInFilters) "<nil>") true $pagefind.useBuiltInFilters)
+      "filters" ($pagefind.filters | default dict)
+      "sort" ($pagefind.sort | default dict)
+      "ranking" ($pagefind.ranking | default dict)
+      "indexWeight" ($pagefind.indexWeight | default dict)
+      "mergeFilter" ($pagefind.mergeFilter | default dict)
+      "baseUrl" ($pagefind.baseUrl | default "")
+      "excerptLength" $excerptLength
+      "highlightParam" ($pagefind.highlightParam | default "")
+    )
+  -}}
+  <script>window.__cmptPagefindConfig={{ $componentConfig | jsonify | safeJS }};</script>
+
+  {{- $params := partial "function/params.html" -}}
+  {{- if .IsPage -}}
+    {{- $hidden := cond (eq $params.hiddenFromSearch true) "true" "false" -}}
+    {{- $encrypted := cond (and (isset $params "password") (ne (printf "%v" $params.password) "")) "true" "false" -}}
+    {{- $date := (.PublishDate | default .Date) | dateFormat (.Site.Params.dateFormat | default "2006-01-02") -}}
+    <meta data-pagefind-filter="hidden:{{ $hidden }}">
+    <meta data-pagefind-filter="encrypted:{{ $encrypted }}">
+    <meta data-pagefind-meta="date:{{ $date }}">
+    <meta data-pagefind-sort="date:{{ (.PublishDate | default .Date).Unix }}">
+  {{- end -}}
+
+  {{- $options := dict "targetPath" "js/cmpt-pagefind-component.head.min.js" "minify" hugo.IsProduction -}}
+  {{- if not hugo.IsProduction -}}
+    {{- $options = dict "sourceMap" "external" | merge $options -}}
+  {{- end -}}
+  {{- dict "Source" (resources.Get "js/cmpt-pagefind-component.head.js") "Build" $options "Fingerprint" $fingerprint "Defer" true | partial "plugin/script.html" -}}
+{{- end -}}

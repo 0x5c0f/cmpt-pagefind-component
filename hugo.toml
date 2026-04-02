@@ -3,4 +3,43 @@
 
 [module.hugoVersion]
 extended = true
-min = "0.147.7"
+min = "0.156.0"
+
+# 仅提供组件默认值与示例注释：
+# 1) 用户站点中同名配置优先级更高（会覆盖这里）
+# 2) 最小可用通常只需：
+#    [params.search]
+#    enable = true
+#    type = "pagefind"
+[params.search.pagefind]
+  mode = "basic"
+  bundlePath = "/pagefind/"    # Pagefind 索引目录（需包含 pagefind.js）
+  debounceTimeoutMs = 300
+  useBuiltInFilters = true
+  excerptLength = 20
+  # 高级参数：仅在站点部署于子路径时使用；默认不建议配置
+  # baseUrl = "/blog/"
+  highlightParam = ""          # 示例: "highlight"
+
+[params.search.pagefind.filters]
+# category = "技术"
+# tags = ["hugo", "fixit"]
+# encrypted = "false"
+
+[params.search.pagefind.sort]
+# date = "desc"
+
+[params.search.pagefind.ranking]
+# termSaturation = 1.2
+# termSimilarity = 1.0
+# pageLength = 0.8
+
+[params.search.pagefind.indexWeight]
+# 示例1（推荐）：按字段加权
+# title = 8
+# tags = 3
+# 示例2：统一权重（也支持数值写法）
+# value = 1
+
+[params.search.pagefind.mergeFilter]
+# operator = "and"
