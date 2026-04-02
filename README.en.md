@@ -105,6 +105,7 @@ head = [
 [params.search.pagefind]
 mode = "basic"              # basic | advanced
 bundlePath = "/pagefind/"   # pagefind index directory
+maxResultLength = 6         # optional: override params.search.maxResultLength
 debounceTimeoutMs = 300     # debounce in advanced mode
 useBuiltInFilters = true    # auto-add hidden=false / encrypted=false
 excerptLength = 80          # example custom excerpt length
@@ -133,7 +134,7 @@ Optional advanced blocks:
 | `params.search.type` | `string` | - | Set to `"pagefind"` to let this component take over |
 | `params.search.placeholder` | `string` | Theme default | Input placeholder text |
 | `params.search.maxResultLength` | `int` | `10` | Max dropdown items; `0` means no result list |
-| `params.search.snippetLength` | `int` | `50` | Fallback only when `params.search.pagefind.excerptLength` is not set. With component defaults, this fallback usually does not apply |
+| `params.search.snippetLength` | `int` | `30` | Default source for `excerptLength`. Used when `params.search.pagefind.excerptLength` is not set |
 
 #### `params.search.pagefind.*` (component config)
 
@@ -141,9 +142,10 @@ Optional advanced blocks:
 |---|---|---:|---|
 | `mode` | `string` | `"basic"` | Search mode: `basic` or `advanced` |
 | `bundlePath` | `string` | `"/pagefind/"` | Pagefind index directory; component loads `${bundlePath}pagefind.js` |
+| `maxResultLength` | `int` | Reuse `params.search.maxResultLength` (default `10`) | Result limit for Pagefind. Can override global `params.search.maxResultLength` |
 | `debounceTimeoutMs` | `int` | `300` | Debounce interval for `advanced` mode; `0` disables debounce |
 | `useBuiltInFilters` | `bool` | `true` | Auto-tries `hidden=false` and `encrypted=false` when these filter fields exist in index |
-| `excerptLength` | `int` | `20` | Dropdown excerpt length. `0` usually means title-only results |
+| `excerptLength` | `int` | Reuses `params.search.snippetLength` when unset (default `30`) | Dropdown excerpt length. If explicitly set, this value takes precedence. `0` usually means title-only results |
 | `baseUrl` | `string` | `""` | Advanced option for subpath deployment. Misconfiguration can break result URLs |
 | `highlightParam` | `string` | `""` | Passed to `pagefind.options({ highlightParam })` |
 | `filters` | `map[string]any` | `{}` | Passed to `pagefind.search(..., { filters })` |
@@ -165,13 +167,13 @@ Actual value resolution order:
 
 | Parameter | Precedence (high -> low) | Current out-of-box value |
 |---|---|---|
-| `excerptLength` | `params.search.pagefind.excerptLength` -> `params.search.snippetLength` -> `50` | `20` (from component `hugo.toml`) |
-| `maxResultLength` | `params.search.maxResultLength` -> `10` | `10` |
+| `excerptLength` | `params.search.pagefind.excerptLength` -> `params.search.snippetLength` -> `30` | Reuses `snippetLength` by default (FixIt default `30`) |
+| `maxResultLength` | `params.search.pagefind.maxResultLength` -> `params.search.maxResultLength` -> `10` | Reuses `params.search.maxResultLength` by default (FixIt default `10`) |
 | `debounceTimeoutMs` | `params.search.pagefind.debounceTimeoutMs` -> `300` | `300` |
 | `bundlePath` | `params.search.pagefind.bundlePath` -> `"/pagefind/"` | `"/pagefind/"` |
 | `useBuiltInFilters` | `params.search.pagefind.useBuiltInFilters` -> `true` | `true` |
 
-For `excerptLength`: code keeps the fallback chain (`snippetLength -> 50`), but since component defaults set `excerptLength = 20`, most setups directly use `20` unless explicitly overridden/removed.
+For `excerptLength`: the component no longer sets a standalone default value. It reuses `params.search.snippetLength` first, and only falls back to `30` if `snippetLength` is also unset.
 
 ### Pass-through config examples
 
@@ -274,7 +276,7 @@ head = ["inject/cmpt-pagefind-component.fixit.html"]
 Keeping `hugo.toml` in this component repo is intentional:
 
 1. It declares minimum runtime requirements (`Hugo Extended >= 0.156.0`).
-2. It provides component defaults (`mode`, `bundlePath`, `excerptLength`, etc.) to reduce manual config.
+2. It provides component defaults (`mode`, `bundlePath`, etc.) to reduce manual config; `excerptLength` reuses FixIt `snippetLength` by default.
 
 It does not forcibly override site config. Site-level values have higher priority.
 

@@ -105,6 +105,7 @@ head = [
 [params.search.pagefind]
 mode = "basic"              # basic | advanced
 bundlePath = "/pagefind/"   # pagefind 索引目录
+maxResultLength = 6         # 可选：覆盖 params.search.maxResultLength
 debounceTimeoutMs = 300     # advanced 模式下的防抖时间
 useBuiltInFilters = true    # 自动附加 hidden=false / encrypted=false 过滤
 excerptLength = 80          # 搜索摘要长度（示例：自定义为 80）
@@ -133,7 +134,7 @@ excerptLength = 80          # 搜索摘要长度（示例：自定义为 80）
 | `params.search.type` | `string` | - | 设为 `"pagefind"` 时由本组件接管 |
 | `params.search.placeholder` | `string` | 主题默认文案 | 输入框占位文本 |
 | `params.search.maxResultLength` | `int` | `10` | 下拉结果最大条数；设为 `0` 时不展示结果列表 |
-| `params.search.snippetLength` | `int` | `50` | 仅在未设置 `params.search.pagefind.excerptLength` 时作为回退值；本组件默认已提供 `excerptLength=20`，通常不会触发该回退 |
+| `params.search.snippetLength` | `int` | `30` | `excerptLength` 的默认来源。未设置 `params.search.pagefind.excerptLength` 时会复用该值 |
 
 #### `params.search.pagefind.*`（本组件配置）
 
@@ -141,9 +142,10 @@ excerptLength = 80          # 搜索摘要长度（示例：自定义为 80）
 |---|---|---:|---|
 | `mode` | `string` | `"basic"` | 搜索模式：`basic` 或 `advanced` |
 | `bundlePath` | `string` | `"/pagefind/"` | Pagefind 索引目录，组件会动态加载 `${bundlePath}pagefind.js` |
+| `maxResultLength` | `int` | 复用 `params.search.maxResultLength`（默认 `10`） | Pagefind 结果条数上限。设置后可覆盖全局 `params.search.maxResultLength` |
 | `debounceTimeoutMs` | `int` | `300` | `advanced` 模式下 `debouncedSearch` 防抖间隔；设为 `0` 等价于不防抖 |
 | `useBuiltInFilters` | `bool` | `true` | 自动尝试附加 `hidden=false`、`encrypted=false`。仅在索引中存在这两个 filter 字段时生效 |
-| `excerptLength` | `int` | `20` | 下拉摘要长度。组件默认值为 `20`；设为 `0` 时通常会导致“仅标题无摘要” |
+| `excerptLength` | `int` | 未设置时复用 `params.search.snippetLength`（默认 `30`） | 下拉摘要长度。若显式设置则优先使用该值；设为 `0` 时通常会导致“仅标题无摘要” |
 | `baseUrl` | `string` | `""` | 高级参数，默认不需要设置。仅在“站点部署于子路径”这类场景使用；误设可能导致结果 URL 异常 |
 | `highlightParam` | `string` | `""` | 透传到 `pagefind.options({ highlightParam })` |
 | `filters` | `map[string]any` | `{}` | 查询过滤条件，透传到 `pagefind.search(..., { filters })` |
@@ -164,15 +166,15 @@ excerptLength = 80          # 搜索摘要长度（示例：自定义为 80）
 
 | 参数 | 取值优先级（从高到低） | 当前开箱默认 |
 |---|---|---|
-| `excerptLength` | `params.search.pagefind.excerptLength` → `params.search.snippetLength` → `50` | `20`（来自组件 `hugo.toml`） |
-| `maxResultLength` | `params.search.maxResultLength` → `10` | `10` |
+| `excerptLength` | `params.search.pagefind.excerptLength` → `params.search.snippetLength` → `30` | 默认复用 `snippetLength`（FixIt 默认 `30`） |
+| `maxResultLength` | `params.search.pagefind.maxResultLength` → `params.search.maxResultLength` → `10` | 默认复用 `params.search.maxResultLength`（FixIt 默认 `10`） |
 | `debounceTimeoutMs` | `params.search.pagefind.debounceTimeoutMs` → `300` | `300` |
 | `bundlePath` | `params.search.pagefind.bundlePath` → `"/pagefind/"` | `"/pagefind/"` |
 | `useBuiltInFilters` | `params.search.pagefind.useBuiltInFilters` → `true` | `true` |
 
 > 对 `excerptLength` 的具体说明：  
-> 代码层面确实保留了 `snippetLength -> 50` 的回退链路；但组件默认配置已设置 `excerptLength = 20`，所以大多数场景会直接命中 `20`。  
-> 只有在你显式覆盖/移除该值时，才会看到 `snippetLength` 回退生效。
+> 组件默认不再单独设置 `excerptLength`，会优先复用 `params.search.snippetLength`。  
+> 若站点也未设置 `snippetLength`，则最终回退到 `30`（与 FixIt 默认行为保持一致）。
 
 ### 透传参数示例（可按需启用）
 
@@ -278,7 +280,7 @@ head = ["inject/cmpt-pagefind-component.fixit.html"]
 本组件仓库根目录的 `hugo.toml` 是**有必要保留**的，作用有两点：
 
 1. 声明组件最低运行要求（`Hugo Extended >= 0.156.0`），防止低版本环境出现不可预期行为。
-2. 给组件提供默认参数（如 `mode`、`bundlePath`、`excerptLength`），减少用户手动配置量。
+2. 给组件提供默认参数（如 `mode`、`bundlePath`），减少用户手动配置量；`excerptLength` 默认复用 FixIt 的 `snippetLength`。
 
 它不会强制覆盖站点自己的同名配置；站点配置优先级更高。  
 实践上建议：`hugo.toml` 保持“可运行默认值”，详细使用案例与参数解释放在 `README`，便于维护。

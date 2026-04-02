@@ -14,9 +14,12 @@ min = "0.156.0"
 [params.search.pagefind]
   mode = "basic"
   bundlePath = "/pagefind/"    # Pagefind 索引目录（需包含 pagefind.js）
+  # maxResultLength 默认复用 params.search.maxResultLength（FixIt 默认 10）
+  # maxResultLength = 10
   debounceTimeoutMs = 300
   useBuiltInFilters = true
-  excerptLength = 20
+  # excerptLength 默认复用 params.search.snippetLength（FixIt 默认 30）
+  # excerptLength = 80
   # 高级参数：仅在站点部署于子路径时使用；默认不建议配置
   # baseUrl = "/blog/"
   highlightParam = ""          # 示例: "highlight"

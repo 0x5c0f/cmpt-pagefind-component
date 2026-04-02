@@ -206,7 +206,13 @@
       if (!query || !query.trim()) return [];
       const pagefind = await ensurePagefind();
       const mode = (pagefindConfig.mode || 'basic').toLowerCase();
-      const rawMaxResultLength = Number(componentConfig.maxResultLength ?? searchConfig.maxResultLength ?? 10);
+      const rawMaxResultLength = Number(
+        pagefindConfig.maxResultLength
+          ?? pagefindConfig.maxresultlength
+          ?? componentConfig.maxResultLength
+          ?? searchConfig.maxResultLength
+          ?? 10,
+      );
       const maxResultLength = Number.isFinite(rawMaxResultLength) ? Math.max(0, Math.floor(rawMaxResultLength)) : 10;
       const searchOptions = { ...baseSearchOptions };
 

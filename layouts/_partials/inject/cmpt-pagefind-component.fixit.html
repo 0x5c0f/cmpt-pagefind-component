@@ -8,13 +8,19 @@
   {{- else if isset $search "maxresultlength" -}}
     {{- $maxResultLength = index $search "maxresultlength" -}}
   {{- end -}}
+  {{- $pagefindMaxResultLength := $maxResultLength -}}
+  {{- if isset $pagefind "maxResultLength" -}}
+    {{- $pagefindMaxResultLength = index $pagefind "maxResultLength" -}}
+  {{- else if isset $pagefind "maxresultlength" -}}
+    {{- $pagefindMaxResultLength = index $pagefind "maxresultlength" -}}
+  {{- end -}}
   {{- $debounceTimeoutMs := 300 -}}
   {{- if isset $pagefind "debounceTimeoutMs" -}}
     {{- $debounceTimeoutMs = index $pagefind "debounceTimeoutMs" -}}
   {{- else if isset $pagefind "debouncetimeoutms" -}}
     {{- $debounceTimeoutMs = index $pagefind "debouncetimeoutms" -}}
   {{- end -}}
-  {{- $excerptLength := ($search.snippetLength | default 50) -}}
+  {{- $excerptLength := ($search.snippetLength | default 30) -}}
   {{- if isset $pagefind "excerptLength" -}}
     {{- $excerptLength = index $pagefind "excerptLength" -}}
   {{- else if isset $pagefind "excerptlength" -}}
@@ -26,6 +32,7 @@
     "pagefind" (dict
       "mode" ($pagefind.mode | default "basic")
       "bundlePath" ($pagefind.bundlePath | default "/pagefind/")
+      "maxResultLength" $pagefindMaxResultLength
       "debounceTimeoutMs" $debounceTimeoutMs
       "useBuiltInFilters" (cond (eq (printf "%v" $pagefind.useBuiltInFilters) "<nil>") true $pagefind.useBuiltInFilters)
       "filters" ($pagefind.filters | default dict)
