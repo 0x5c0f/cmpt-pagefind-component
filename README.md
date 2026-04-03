@@ -57,7 +57,7 @@ hugo mod tidy
 
 ```bash
 git submodule add https://github.com/hugo-fixit/FixIt.git themes/FixIt
-git submodule add https://github.com/hugo-fixit/cmpt-pagefind-component.git themes/cmpt-pagefind-component
+git submodule add https://github.com/0x5c0f/cmpt-pagefind-component.git themes/cmpt-pagefind-component
 ```
 
 然后在站点 `hugo.toml` 启用：
