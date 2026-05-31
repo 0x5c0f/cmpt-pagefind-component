@@ -1,3 +1,3 @@
-module github.com/hugo-fixit/cmpt-pagefind-component
+module github.com/0x5c0f/cmpt-pagefind-component
 
-go 1.20
+go 1.22.1
